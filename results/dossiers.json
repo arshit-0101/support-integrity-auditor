@@ -1,1 +1,9 @@
-
+[
+  {
+    "ticket_id": "TKT001",
+    "assigned_priority": "Medium",
+    "inferred_severity": "High",
+    "mismatch_type": "Hidden Crisis",
+    "severity_delta": 0.35
+  }
+]
