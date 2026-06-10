@@ -1,0 +1,5 @@
+signal,weight,avg_score_critical,avg_score_low,separation
+rule_based_nlp,0.3,0.556,0.472,0.084
+resolution_time,0.2,0.236,0.552,-0.317
+semantic_embedding,0.5,0.76,0.423,0.337
+all_combined,-,0.594,0.464,0.13
