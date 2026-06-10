@@ -163,25 +163,108 @@ elif mode == "Batch CSV":
 
 elif mode == "Dashboard":
     st.title("📊 Dashboard")
-    c1,c2,c3 = st.columns(3)
-    ff = c1.file_uploader("full_results.csv", type="csv")
-    df2 = c2.file_uploader("dossiers.json", type="json")
-    af = c3.file_uploader("ablation_table.csv", type="csv")
-    if ff and df2 and af:
-        full = pd.read_csv(ff)
-        dos = json.load(df2)
-        abl = pd.read_csv(af)
-        total = len(full); mis = int(full["mismatch"].sum())
-        hidden = int(full[full["mismatch"]==1]["severity_delta"].gt(0).sum())
-        k1,k2,k3,k4 = st.columns(4)
-        k1.metric("Total", total); k2.metric("Mismatches", mis)
-        k3.metric("Hidden Crises", hidden); k4.metric("False Alarms", mis-hidden)
-        st.subheader("Mismatch by Priority")
-        mp = full.groupby("Priority_Level")["mismatch"].mean().reset_index()
-        st.bar_chart(mp.set_index("Priority_Level"))
-        st.subheader("Ablation Table")
-        st.dataframe(abl, use_container_width=True)
-        st.subheader("Sample Dossiers")
-        for d in dos[:5]:
-            with st.expander(f"{d['ticket_id']} — {d['mismatch_type']}"):
-                st.json(d)
+
+    st.markdown("""
+    Analytics dashboard generated from Support Integrity Auditor outputs.
+    """)
+
+    try:
+        full = pd.read_csv("results/full_results.csv")
+
+        with open("results/dossiers.json", "r") as f:
+            dos = json.load(f)
+
+        abl = pd.read_csv("results/ablation_table.csv")
+
+    except Exception as e:
+        st.error(f"Dashboard files missing: {e}")
+        st.stop()
+
+    total = len(full)
+    mis = int(full["mismatch"].sum())
+
+    hidden = int(
+        full[full["mismatch"] == 1]["severity_delta"].gt(0).sum()
+    )
+
+    false_alarms = mis - hidden
+
+    k1, k2, k3, k4 = st.columns(4)
+
+    k1.metric("Total Tickets", total)
+    k2.metric("Mismatches", mis)
+    k3.metric("Hidden Crises", hidden)
+    k4.metric("False Alarms", false_alarms)
+
+    st.markdown("---")
+
+    st.subheader("Mismatch Distribution")
+
+    mismatch_df = pd.DataFrame({
+        "Category": ["Consistent", "Mismatch"],
+        "Count": [total - mis, mis]
+    })
+
+    st.bar_chart(
+        mismatch_df.set_index("Category")
+    )
+
+    st.markdown("---")
+
+    st.subheader("Mismatch Rate by Priority")
+
+    priority_stats = (
+        full.groupby("Priority_Level")["mismatch"]
+        .mean()
+        .reset_index()
+    )
+
+    st.bar_chart(
+        priority_stats.set_index("Priority_Level")
+    )
+
+    if "Ticket_Channel" in full.columns:
+
+        st.markdown("---")
+        st.subheader("Mismatch Rate by Channel")
+
+        channel_stats = (
+            full.groupby("Ticket_Channel")["mismatch"]
+            .mean()
+            .reset_index()
+        )
+
+        st.bar_chart(
+            channel_stats.set_index("Ticket_Channel")
+        )
+
+    st.markdown("---")
+
+    st.subheader("Ablation Study")
+    st.dataframe(abl, use_container_width=True)
+
+    st.markdown("---")
+
+    st.subheader("Sample Evidence Dossiers")
+
+    for d in dos[:5]:
+        with st.expander(
+            f"{d['ticket_id']} — {d['mismatch_type']}"
+        ):
+            st.json(d)
+
+    st.markdown("---")
+
+    st.download_button(
+        "Download Results CSV",
+        full.to_csv(index=False),
+        "full_results.csv",
+        "text/csv"
+    )
+
+    st.download_button(
+        "Download Dossiers JSON",
+        json.dumps(dos, indent=2),
+        "dossiers.json",
+        "application/json"
+    )
