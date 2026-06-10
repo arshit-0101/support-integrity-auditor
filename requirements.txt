@@ -1,0 +1,9 @@
+streamlit
+torch
+transformers
+sentence-transformers
+pandas
+numpy
+scikit-learn
+scipy
+huggingface_hub
