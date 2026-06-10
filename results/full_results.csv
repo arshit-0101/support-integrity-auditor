@@ -1,1 +1,6 @@
-
+Ticket_ID,Priority_Level,mismatch,severity_delta,Ticket_Channel
+TKT001,Medium,1,0.35,Email
+TKT002,Low,0,0.02,Chat
+TKT003,High,1,-0.22,Phone
+TKT004,Critical,0,0.01,Email
+TKT005,Medium,1,0.44,Web Form
